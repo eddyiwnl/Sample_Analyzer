@@ -33,75 +33,80 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     //---------------------------------------------------Download to excel code------------------------------------------
     
     //creating json data from model
-    const newdict = {}
 
-    function containsObject(obj, list) {
-        var i;
-        for (i = 0; i < Object.keys(list).length; i++) {
-            if (Object.keys(list)[i] == obj) {
-                return true;
+    const subgroups = [];
+
+    const exportToExcel = async (fileName, data) => {
+
+        const newdict = {}
+
+        function containsObject(obj, list) {
+            var i;
+            for (i = 0; i < Object.keys(list).length; i++) {
+                if (Object.keys(list)[i] == obj) {
+                    return true;
+                }
+            }
+        
+            return false;
+        }
+
+        
+        for (let i = 0; i < Object.keys(data).length; i++) {
+            newdict[Object.keys(data)[i]] = {}
+            for (let j = 0; j < data[Object.keys(data)[i]].truth.true_labels.length; j++){
+                if(containsObject(data[Object.keys(data)[i]].truth.true_labels[j], newdict[Object.keys(data)[i]])){
+                    newdict[Object.keys(data)[i]][data[Object.keys(data)[i]].truth.true_labels[j]]++;
+                } else {
+                    newdict[Object.keys(data)[i]][data[Object.keys(data)[i]].truth.true_labels[j]] = 1;
+                }
             }
         }
-    
-        return false;
-    }
 
-    
-    for (let i = 0; i < Object.keys(data).length; i++) {
-        newdict[Object.keys(data)[i]] = {}
-        for (let j = 0; j < data[Object.keys(data)[i]].truth.true_labels.length; j++){
-            if(containsObject(data[Object.keys(data)[i]].truth.true_labels[j], newdict[Object.keys(data)[i]])){
-                newdict[Object.keys(data)[i]][data[Object.keys(data)[i]].truth.true_labels[j]]++;
-            } else {
-                newdict[Object.keys(data)[i]][data[Object.keys(data)[i]].truth.true_labels[j]] = 1;
+        //restrucute dictionary so that it matches desired format
+        const finalData = []
+
+        for (let i = 0; i < Object.keys(newdict).length; i++) { //for every 7 images
+            //console.log(Object.keys(newdict))
+            //loop through dictionary of image
+            for (let j = 0; j < Object.keys(newdict[Object.keys(newdict)[i]]).length; j++) {
+                //console.log(newdict[Object.keys(newdict)[i]])
+                const finalDict = {}
+                finalDict['File Name'] = Object.keys(newdict)[i]
+                finalDict['Major Group'] = Object.keys(newdict[Object.keys(newdict)[i]])[j]
+                finalDict['Individual Count'] = Object.values(newdict[Object.keys(newdict)[i]])[j]
+                finalDict['Manually Reviewed'] = 0
+                finalDict['Additional Label'] = subgroups[0] //will have to change this once we have multiple images
+                finalData.push(finalDict)
             }
         }
-    }
 
-    //restrucute dictionary so that it matches desired format
-    const finalData = []
+        //loop through major groups of old dictionary to get total counts 
+        const finalCounts = []
+        const countsDict = {}
 
-    for (let i = 0; i < Object.keys(newdict).length; i++) { //for every 7 images
-        //console.log(Object.keys(newdict))
-        //loop through dictionary of image
-        for (let j = 0; j < Object.keys(newdict[Object.keys(newdict)[i]]).length; j++) {
-            //console.log(newdict[Object.keys(newdict)[i]])
-            const finalDict = {}
-            finalDict['filename'] = Object.keys(newdict)[i]
-            finalDict['majorgroup'] = Object.keys(newdict[Object.keys(newdict)[i]])[j]
-            finalDict['individualcount'] = Object.values(newdict[Object.keys(newdict)[i]])[j]
-            finalDict['manuallyreviewed'] = 0
-            finalData.push(finalDict)
-        }
-    }
-
-    //loop through major groups of old dictionary to get total counts 
-    const finalCounts = []
-    const countsDict = {}
-
-    for (let i = 0; i < Object.keys(newdict).length; i++) {
-        for (let j = 0; j < Object.keys(newdict[Object.keys(newdict)[i]]).length; j++) {
-            if(containsObject(Object.keys(newdict[Object.keys(newdict)[i]])[j], countsDict)){
-                countsDict[Object.keys(newdict[Object.keys(newdict)[i]])[j]]++;
-            } else {
-                countsDict[Object.keys(newdict[Object.keys(newdict)[i]])[j]] = 1;
+        for (let i = 0; i < Object.keys(newdict).length; i++) {
+            for (let j = 0; j < Object.keys(newdict[Object.keys(newdict)[i]]).length; j++) {
+                if(containsObject(Object.keys(newdict[Object.keys(newdict)[i]])[j], countsDict)){
+                    countsDict[Object.keys(newdict[Object.keys(newdict)[i]])[j]]++;
+                } else {
+                    countsDict[Object.keys(newdict[Object.keys(newdict)[i]])[j]] = 1;
+                }
             }
         }
-    }
 
-    finalCounts.push(countsDict)
+        finalCounts.push(countsDict)
 
 
-    const fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
-    const fileExtension = '.xlsx';
+        const fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+        const fileExtension = '.xlsx';
 
-    const exportToExcel = async () => {
         const ws1 = XLSX.utils.json_to_sheet(finalData);
         const ws2 = XLSX.utils.json_to_sheet(finalCounts);
         const wb = { Sheets: { 'Results': ws1, 'Total Counts': ws2 }, SheetNames: ['Results', 'Total Counts'] };
         const excelBuffer = XLSX.write(wb, {bookType: 'xlsx', type: 'array' });
-        const data = new Blob([excelBuffer], { type: fileType });
-        FileSaver.saveAs(data, fileName + fileExtension);
+        const Exceldata = new Blob([excelBuffer], { type: fileType });
+        FileSaver.saveAs(Exceldata, fileName + fileExtension);
     }
 
     //-----------------------------------------------End of Download to excel code-----------------------------------------
@@ -1000,6 +1005,26 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         console.log(bboxs)
     };
 
+    
+    const [message, setMessage] = useState('');
+    const [updated, setUpdated] = useState(message);
+
+
+    const handleChange2 = (event) => {
+        setMessage(event.target.value);
+    };
+
+    const handleClick2 = () => {
+        setUpdated(message);
+    };
+
+    //console.log(updated) //now I can access the subgroup classification
+
+    subgroups.push(updated); //could so something like this to add to excel output
+
+    console.log(subgroups)
+    
+    
     return (
         <section className='section'>
             <h2>Bounding Box Editor</h2>
@@ -1093,6 +1118,27 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     </DropdownButton>
 
                 }
+
+                {
+                    deleteButton &&
+                    <div>
+
+                    <h2>Add Additional Label: {message}</h2>
+
+                    <input
+                    type = "text"
+                    id = "message"
+                    name = "message"
+                    onChange = {handleChange2}
+                    value = {message}
+                    />
+
+                    <button onClick={handleClick2}>Update</button>
+
+                    </div>
+                }
+
+
                 <br />
                 <button onClick={() => dummySaveFile()}
                     className="save-file-button"
@@ -1100,7 +1146,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     Save Project
                 </button>
                 <button variant='contained'
-                onClick={(e) => exportToExcel(fileName)} color='primary'
+                onClick={(e) => exportToExcel(fileName, data)} color='primary'
                 style={{ cursor: "pointer", fontSize: 14 }}
                 >Download Data to Excel
                 </button>
