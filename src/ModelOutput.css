@@ -1,0 +1,32 @@
+#wrapper {
+    text-align: center;
+    position:relative;
+}
+
+#text_canvas {
+    position:absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 5;
+}
+
+#bbox_canvas {
+    text-align: center;
+    position:absolute;
+    left: 15%;
+    /* margin: auto; */
+    /* left: 0px; */
+    /* top: 0px; */
+    z-index: 10;
+    
+}
+
+#temp_legend {
+    position:absolute;
+    top:650px;
+}
+
+#rest {
+    position:relative;
+    top:600px;
+}
