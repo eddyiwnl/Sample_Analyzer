@@ -1,7 +1,12 @@
 const path = require("path");
+const url = require("url");
 
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, protocol, dialog, ipcMain } = require("electron");
 const isDev = require("electron-is-dev");
+
+const fs = require('fs');
+// Global variable
+var currData;
 
 // // Conditionally include the dev tools installer to load React Dev Tools
 // let installExtension, REACT_DEVELOPER_TOOLS; // NEW!
@@ -23,7 +28,8 @@ function createWindow() {
     width: 800,
     height: 600,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      preload: path.join(__dirname, "preload.js"),
     }
   });
 
@@ -41,11 +47,81 @@ function createWindow() {
   }
 }
 
+/*
+-------------------- IPC HANDLING -----------------------
+*/
+// Open file dialog
+function handleFileOpen(e, message, win) {
+  const dialogResult = dialog.showOpenDialog(win, {
+    properties: ['openFile']
+  })
+  return dialogResult
+  // console.log("hi")
+  // const result = dialog.showOpenDialog({
+  //   properties: ["openFile"],
+  //   filters: [{ name: "Images", extensions: ["png","jpg","jpeg"] }]
+  // });
+
+  // result.then(({canceled, filePaths, bookmarks}) => {
+  //   const base64 = fs.readFileSync(filePaths[0]).toString('base64');
+  //   event.reply("chosenFile", base64);
+  // });
+  // return result
+}
+
+// Save file dialog
+const ExcelExportData = 
+    [{
+      filename: 'img1.jpg', 
+      majorgroup: 'Amphipoda', 
+      individualcount: '2', 
+      reviewed: '0'
+    },
+    {
+      filename: 'img1.jpg', 
+      majorgroup: 'Polychaeta', 
+      individualcount: '3', 
+      reviewed: '1'
+    }]
+function handleFileSave(e, win) {
+  // console.log(projData)
+  const dialogResult = dialog.showSaveDialog(win, {
+    properties: ['openFile']
+  })
+  dialogResult.then(result => {
+    console.log("RESULT: ", result)
+    fs.writeFileSync(result.filePath, currData, 'utf-8');
+  })
+    return dialogResult
+}
+
+function handleDataSend(e, projData) {
+  currData = projData
+  console.log(currData)
+}
+
+async function handleAsyncMessage(event, arg) {
+  console.log("Hi", arg)
+}
+
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  createWindow();
+  ipcMain.handle('dialog:openFile', handleFileOpen);
+  ipcMain.handle('async-message', handleAsyncMessage);
+  ipcMain.handle('dialog:saveFile', handleFileSave);
+  ipcMain.on('send-data', handleDataSend)
+  
+  ipcMain.on('ipc-example', async (event, arg) => {
+    const msgTemplate = (pingPong) => `IPC test: ${pingPong}`;
+    console.log(msgTemplate(arg));
+    event.reply('ipc-example', msgTemplate('pong'));
+  });
+
+  const win = createWindow();
+
 
   // if (isDev) {
   //   installExtension(REACT_DEVELOPER_TOOLS)

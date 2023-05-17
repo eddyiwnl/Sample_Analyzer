@@ -8,6 +8,8 @@ const UploadFiles = () => {
   function handleChange(e) {
     console.log(e.target.files);
     setFile(URL.createObjectURL(e.target.files[0]));
+    const currFile = e.target.files[0]
+    console.log("filename: ", e.target.files[0].name)
   }
   
     return (

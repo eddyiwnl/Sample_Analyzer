@@ -780,6 +780,9 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                 drawAnchors();
             }
             else {
+                if(id === undefined) {
+                    id = 1
+                }
                 ctx.clearRect(bbox_list[id].x, bbox_list[id].y, bbox_list[id].w, bbox_list[id].h);
                 // for(_i = 0; _b = bbox_list[_i]; _i ++) {
                 //     if(hover && id === _i) {
