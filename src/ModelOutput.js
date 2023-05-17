@@ -36,9 +36,10 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
 
     const subgroups = [];
 
-    const exportToExcel = async (fileName, data) => {
+    const exportToExcel = async (fileName, editJson) => {
 
         const newdict = {}
+        console.log(editJson)
 
         function containsObject(obj, list) {
             var i;
@@ -52,13 +53,13 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         }
 
         
-        for (let i = 0; i < Object.keys(data).length; i++) {
-            newdict[Object.keys(data)[i]] = {}
-            for (let j = 0; j < data[Object.keys(data)[i]].truth.true_labels.length; j++){
-                if(containsObject(data[Object.keys(data)[i]].truth.true_labels[j], newdict[Object.keys(data)[i]])){
-                    newdict[Object.keys(data)[i]][data[Object.keys(data)[i]].truth.true_labels[j]]++;
+        for (let i = 0; i < Object.keys(editJson).length; i++) {
+            newdict[Object.keys(editJson)[i]] = {}
+            for (let j = 0; j < editJson[Object.keys(editJson)[i]].predictions.pred_labels.length; j++){
+                if(containsObject(editJson[Object.keys(editJson)[i]].predictions.pred_labels[j], newdict[Object.keys(editJson)[i]])){
+                    newdict[Object.keys(editJson)[i]][editJson[Object.keys(editJson)[i]].predictions.pred_labels[j]]++;
                 } else {
-                    newdict[Object.keys(data)[i]][data[Object.keys(data)[i]].truth.true_labels[j]] = 1;
+                    newdict[Object.keys(editJson)[i]][editJson[Object.keys(editJson)[i]].predictions.pred_labels[j]] = 1;
                 }
             }
         }
@@ -1146,7 +1147,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     Save Project
                 </button>
                 <button variant='contained'
-                onClick={(e) => exportToExcel(fileName, data)} color='primary'
+                onClick={(e) => exportToExcel(fileName, editJson)} color='primary'
                 style={{ cursor: "pointer", fontSize: 14 }}
                 >Download Data to Excel
                 </button>
