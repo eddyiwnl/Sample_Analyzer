@@ -8,9 +8,9 @@ const ModelTest = () => {
     const runSimpleScript = () => {
         console.log("Hello from ModelTest.js")
         setLoading(true);
-        window.electronAPI.ipcR.callPythonFile()
-        window.electronAPI.ipcR.scriptResponse()
+        const ret = window.electronAPI.ipcR.callPythonFile()
         console.log("Finished running")
+        console.log("ret: ", ret)
         
         setLoading(false);
     }
