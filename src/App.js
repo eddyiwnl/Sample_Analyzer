@@ -31,6 +31,7 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import UploadFiles from './UploadFiles';
 import ExistingProject from './ExistingProject';
 import ModelOutput from './ModelOutput';
+import ModelTest from './ModelTest';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 
@@ -44,6 +45,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="uploadfiles" element={<UploadFiles />} />
               <Route path="existingproject" element={<ExistingProject />} />
+              <Route path="modeltest" element={<ModelTest />} />
               <Route exact path="/modeloutput" element={<ModelOutput projectData={projectData} setProjectData={setProjectData} filename={'Excel Output'}/>} />
 
         </Routes>

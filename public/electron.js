@@ -5,6 +5,9 @@ const { app, BrowserWindow, protocol, dialog, ipcMain } = require("electron");
 const isDev = require("electron-is-dev");
 
 const fs = require('fs');
+let { PythonShell } = require('python-shell')
+
+
 // Global variable
 var currData;
 
@@ -43,7 +46,7 @@ function createWindow() {
 
   // Open the DevTools.
   if (isDev) {
-    win.webContents.openDevTools({ mode: "detach" });
+    win.webContents.openDevTools();
   }
 }
 
@@ -104,6 +107,15 @@ async function handleAsyncMessage(event, arg) {
   console.log("Hi", arg)
 }
 
+function callScript() {
+  console.log("Running Python Script")
+  PythonShell.run('src/pytest.py', null).then(messages=>{
+    console.log(messages)
+    console.log('finished');
+  });
+}
+
+// Call Python Script
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -112,7 +124,8 @@ app.whenReady().then(() => {
   ipcMain.handle('dialog:openFile', handleFileOpen);
   ipcMain.handle('async-message', handleAsyncMessage);
   ipcMain.handle('dialog:saveFile', handleFileSave);
-  ipcMain.on('send-data', handleDataSend)
+  ipcMain.on('send-data', handleDataSend);
+  ipcMain.on('call-python-file', callScript);
   
   ipcMain.on('ipc-example', async (event, arg) => {
     const msgTemplate = (pingPong) => `IPC test: ${pingPong}`;

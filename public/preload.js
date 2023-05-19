@@ -18,6 +18,7 @@ process.once("loaded", () => {
       saveFile: () => ipcRenderer.invoke('dialog:saveFile'),
       sendProjectData: (projData) => ipcRenderer.send('send-data', projData),
       asyncMessage: () => ipcRenderer.send('async-message'),
+      callPythonFile: () => ipcRenderer.send('call-python-file'),
       once(channel, func) {
         const validChannels = ['ipc-example'];
         if (validChannels.includes(channel)) {
