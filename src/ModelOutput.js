@@ -1026,7 +1026,17 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
 
     const fileList = JSON.parse(sessionStorage.getItem("fileList"))
     console.log("passing files:", fileList)
-    console.log("passing files first file:", fileList[0])
+    console.log("passing files first file path:", fileList[0])
+
+    //need to change back slashes to forward slashes and add file:///
+    const correctFilepaths = []
+    for(var i = 0; i < fileList.length; i++) {
+        const newpath = fileList[i].replaceAll("\\", "/")
+        const finalpath = "file:///" + newpath
+        correctFilepaths.push(finalpath)
+    }
+
+    console.log(correctFilepaths)
     
     
     return (
@@ -1042,8 +1052,8 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     style={{
                         width: "825px",
                         height: "550px",
-                        // background: "url('./photos/M12_2_Apr19_3.jpg')",
-                        background: "url('file:///C:/Users/ellyc/OneDrive/Desktop/DATA451/electron-demos/my-app-demo/public/photos/M12_2_Apr19_3.jpg')",
+                        // background: "url('file:///C:/Users/ellyc/OneDrive/Desktop/DATA451/electron-demos/my-app-demo/public/photos/M12_2_Apr19_3.jpg')",
+                        background: "url(" + correctFilepaths[0] + ")", //this is how you change the image!!
                         backgroundSize: "825px 550px"
                     }}
                     // align="center"
