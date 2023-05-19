@@ -9,7 +9,16 @@ const UploadFiles = () => {
     console.log(e.target.files);
     setFile(URL.createObjectURL(e.target.files[0]));
     const currFile = e.target.files[0]
-    console.log("filename: ", e.target.files[0].name)
+    const currFiles = e.target.files
+    // console.log("filename: ", currFile.name)
+    console.log("current files:", currFiles)
+    const test_file_paths = []
+    for (var i = 0; i < currFiles.length; i++) {
+      test_file_paths.push(currFiles[i].path)
+    }
+    console.log("test file path:", test_file_paths)
+    console.log("current file names stringed:", JSON.stringify(test_file_paths));
+    sessionStorage.setItem("fileList", JSON.stringify(test_file_paths));  
   }
   
     return (

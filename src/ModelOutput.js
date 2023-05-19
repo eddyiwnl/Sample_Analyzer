@@ -1024,6 +1024,12 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     subgroups.push(updated); //could so something like this to add to excel output
 
     console.log(subgroups)
+
+    const fileList = JSON.parse(sessionStorage.getItem("fileList"))
+    console.log("passing files:", fileList)
+    console.log("passing files first file:", fileList[0])
+
+
     
     
     return (
@@ -1039,7 +1045,8 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     style={{
                         width: "825px",
                         height: "550px",
-                        background: "url('./photos/M12_2_Apr19_3.jpg')",
+                        // background: "url('./photos/M12_2_Apr19_3.jpg')",
+                        background: "url(" + 'file:///C:/Users/ellyc/OneDrive/Desktop/DATA451/electron-demos/my-app-demo/public/photos/M12_2_Apr19_3.jpg' +")",
                         backgroundSize: "825px 550px"
                     }}
                     // align="center"
