@@ -8,7 +8,6 @@ import data from './test_output.json'; // for downloading test data to excel
 import XLSX from 'sheetjs-style';
 import * as FileSaver from 'file-saver';
 
-
 // const PureCanvas = React.forwardRef((props, ref) => <canvas ref={ref} />)
 
 /* TODO
@@ -1028,8 +1027,6 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     const fileList = JSON.parse(sessionStorage.getItem("fileList"))
     console.log("passing files:", fileList)
     console.log("passing files first file:", fileList[0])
-
-
     
     
     return (
@@ -1046,7 +1043,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                         width: "825px",
                         height: "550px",
                         // background: "url('./photos/M12_2_Apr19_3.jpg')",
-                        background: "url(" + 'file:///C:/Users/ellyc/OneDrive/Desktop/DATA451/electron-demos/my-app-demo/public/photos/M12_2_Apr19_3.jpg' +")",
+                        background: "url('file:///C:/Users/ellyc/OneDrive/Desktop/DATA451/electron-demos/my-app-demo/public/photos/M12_2_Apr19_3.jpg')",
                         backgroundSize: "825px 550px"
                     }}
                     // align="center"
