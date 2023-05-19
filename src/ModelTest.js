@@ -9,6 +9,10 @@ const ModelTest = () => {
         console.log("Hello from ModelTest.js")
         setLoading(true);
         window.electronAPI.ipcR.callPythonFile()
+        window.electronAPI.ipcR.scriptResponse()
+        console.log("Finished running")
+        
+        setLoading(false);
     }
   
     return (
@@ -22,7 +26,15 @@ const ModelTest = () => {
                         className="b1"
                     >
                     Run Script 
-                    </button>
+        </button>
+        {
+            !loading && 
+            <h2>Model idle...</h2>
+        }    
+        {
+            loading && 
+            <h2>Running model...</h2>
+        }      
         </section>
     );
   };

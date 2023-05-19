@@ -31,6 +31,7 @@ function createWindow() {
     width: 800,
     height: 600,
     webPreferences: {
+      webSecurity: false,
       nodeIntegration: true,
       preload: path.join(__dirname, "preload.js"),
     }
@@ -108,11 +109,24 @@ async function handleAsyncMessage(event, arg) {
 }
 
 function callScript() {
-  console.log("Running Python Script")
-  PythonShell.run('src/pytest.py', null).then(messages=>{
-    console.log(messages)
-    console.log('finished');
-  });
+  return new Promise(async(resolve, reject) => {
+    try{
+      console.log("Running Python Script")
+      PythonShell.run('src/pytest.py', null).then(messages=>{
+        console.log(messages)
+        console.log('finished');
+      });
+      resolve(response);
+    } catch (e) {
+      reject(e.message)
+    }
+  })
+  // console.log("Running Python Script")
+  // PythonShell.run('src/pytest.py', null).then(messages=>{
+  //   console.log(messages)
+  //   console.log('finished');
+  // });
+
 }
 
 // Call Python Script
@@ -125,7 +139,9 @@ app.whenReady().then(() => {
   ipcMain.handle('async-message', handleAsyncMessage);
   ipcMain.handle('dialog:saveFile', handleFileSave);
   ipcMain.on('send-data', handleDataSend);
-  ipcMain.on('call-python-file', callScript);
+  ipcMain.on('call-python-file', async (event, arg) => {
+    callScript().then(result => event.sender.send('script-reply', result));
+  });
   
   ipcMain.on('ipc-example', async (event, arg) => {
     const msgTemplate = (pingPong) => `IPC test: ${pingPong}`;
