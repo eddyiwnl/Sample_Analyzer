@@ -14,6 +14,97 @@ import * as FileSaver from 'file-saver';
 One of two functionalities: 
 */
 const ModelOutput = ({projectData, setProjectData, fileName}) => {
+
+    //---------------------------------------------Initializing variables------------------------------------------
+    const [outputGroup, setOutputGroup] = useState("") // test output
+    const [currElement, setCurrElement] = useState(0) // current box id
+    const [show, setShow] = useState(false) // show or no show button
+    const [showDropDown, setShowDropDown] = useState(false) // show or no show drop-down menu during edit
+    const [deleteButton, setDeleteButton] = useState(false) // show or no show the delete button
+    const [bboxs, setBboxs] = useState([]) // bbox_list
+    const [currCtx, setCurrCtx] = useState() // current context (usually the canvasRef.current)
+    const [currMajorGroup, setCurrMajorGroup] = useState("") // current selected major group
+    const [numElements, setNumElements] = useState(0) // number of bounding boxes
+    const [currFilepath, setCurrFilepath] = useState("")
+    // const [hover, setHover] = useState(false)
+
+    const [inDelete, setInDelete] = useState(false); // whether or not the user just deleted a box
+    const [inEdit, setInEdit] = useState(false) // whether or not the user is currently editing
+
+
+    const canvasRef = useRef();
+    const textCanvasRef = useRef();
+
+    var bbox_list = []
+
+    var closeEnough = 5;
+    var dragTL = false;
+    var dragBL = false;
+    var dragTR = false;
+    var dragBR = false;
+    var dragBox = false;
+    var hover = false;
+    var id;
+    // var isDeleted = false;
+
+    var mDownX = 0; // X position of mouseDown
+    var mDownY = 0; // Y position of mouseDown
+    // var inEdit = false;
+
+
+    // Hash table: major group -> bbox color
+    /* 
+    Amphipoda: Red
+    Bivalvia: Yellow
+    Cumacea: Dark Green
+    Gastropoda: Magenta
+    Insecta: Light Purple
+    Ostracoda: Lime Green
+    Polychaeta: Light Blue
+    Other Annelida: White
+    Other Crustacea: Light Red
+    Other: Grey
+    */
+    const major_group_color = new Map();
+    major_group_color.set("Amphipoda", "#E52D00")
+    major_group_color.set("Bivalvia", "#E5D400")
+    major_group_color.set("Cumacea", "#75A433")
+    major_group_color.set("Gastropoda", "#FC30F6")
+    major_group_color.set("Insecta", "#A9A0FF")
+    major_group_color.set("Ostracoda", "#2DFF29")
+    major_group_color.set("Polychaeta", "#2FCAF4")
+    major_group_color.set("Other Annelida", "#FFFFFF")
+    major_group_color.set("Other Crustacea", "#FFBBBB")
+    major_group_color.set("Other", "#8C8B8B")
+
+    //---------------------------------------------Initializing JSON / images------------------------------------------
+    var currImageId = sessionStorage.getItem("curr_image_id");
+    if(!currImageId) {
+        currImageId = 0;
+    }
+    const fileList = JSON.parse(sessionStorage.getItem("fileList"))
+    console.log("passing files:", fileList)
+    console.log("passing files first file path:", fileList[currImageId])
+
+    //need to change back slashes to forward slashes and add file:///
+    const correctFilepaths = []
+    for(var i = 0; i < fileList.length; i++) {
+        const newpath = fileList[i].replaceAll("\\", "/")
+        const newpath2 = newpath.replaceAll(" ", "\\ ")
+        const finalpath = "file:///" + newpath2
+        correctFilepaths.push(finalpath)
+    }
+
+    console.log(correctFilepaths)
+    console.log(correctFilepaths[0])
+    
+    const splitPath = correctFilepaths[currImageId].split("/")
+    const currImage = splitPath[splitPath.length - 1]
+    console.log("Current image: ", currImage)
+
+    // var currImage = "M12_2_Apr19_3.jpg";
+
+
     var testJson = require('./model_outputs/test_output.json')
 
     var editJson;
@@ -25,9 +116,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     console.log("---------------------------------------------------------")
     console.log(editJson)
 
-    var currImage = "M12_2_Apr19_3.jpg";
     // setProjectData(testJson)
-
 
     //---------------------------------------------------Download to excel code------------------------------------------
     
@@ -108,69 +197,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         const Exceldata = new Blob([excelBuffer], { type: fileType });
         FileSaver.saveAs(Exceldata, fileName + fileExtension);
     }
-
     //-----------------------------------------------End of Download to excel code-----------------------------------------
-
-    const [outputGroup, setOutputGroup] = useState("") // test output
-    const [currElement, setCurrElement] = useState(0) // current box id
-    const [show, setShow] = useState(false) // show or no show button
-    const [showDropDown, setShowDropDown] = useState(false) // show or no show drop-down menu during edit
-    const [deleteButton, setDeleteButton] = useState(false) // show or no show the delete button
-    const [bboxs, setBboxs] = useState([]) // bbox_list
-    const [currCtx, setCurrCtx] = useState() // current context (usually the canvasRef.current)
-    const [currMajorGroup, setCurrMajorGroup] = useState("") // current selected major group
-    const [numElements, setNumElements] = useState(0) // number of bounding boxes
-    const [currFilepath, setCurrFilepath] = useState("")
-    // const [hover, setHover] = useState(false)
-
-    const [inDelete, setInDelete] = useState(false); // whether or not the user just deleted a box
-    const [inEdit, setInEdit] = useState(false) // whether or not the user is currently editing
-
-
-    const canvasRef = useRef();
-    const textCanvasRef = useRef();
-
-    var bbox_list = []
-
-    var closeEnough = 5;
-    var dragTL = false;
-    var dragBL = false;
-    var dragTR = false;
-    var dragBR = false;
-    var dragBox = false;
-    var hover = false;
-    var id;
-    // var isDeleted = false;
-
-    var mDownX = 0; // X position of mouseDown
-    var mDownY = 0; // Y position of mouseDown
-    // var inEdit = false;
-
-
-    // Hash table: major group -> bbox color
-    /* 
-    Amphipoda: Red
-    Bivalvia: Yellow
-    Cumacea: Dark Green
-    Gastropoda: Magenta
-    Insecta: Light Purple
-    Ostracoda: Lime Green
-    Polychaeta: Light Blue
-    Other Annelida: White
-    Other Crustacea: Light Red
-    Other: Grey
-    */
-    const major_group_color = new Map();
-    major_group_color.set("Amphipoda", "#E52D00")
-    major_group_color.set("Bivalvia", "#E5D400")
-    major_group_color.set("Cumacea", "#75A433")
-    major_group_color.set("Gastropoda", "#FC30F6")
-    major_group_color.set("Insecta", "#A9A0FF")
-    major_group_color.set("Ostracoda", "#2DFF29")
-    major_group_color.set("Polychaeta", "#2FCAF4")
-    major_group_color.set("Other Annelida", "#FFFFFF")
-    major_group_color.set("Other Crustacea", "#FFBBBB")
-    major_group_color.set("Other", "#8C8B8B")
 
     const setCanvasDims = (ctx) => {
         const canvas = ctx.canvas
@@ -1018,26 +1045,15 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         setUpdated(message);
     };
 
+    const nextImage = () => {
+        console.log("Should go to next image")
+    }
+
     //console.log(updated) //now I can access the subgroup classification
 
     subgroups.push(updated); //could so something like this to add to excel output
 
-    console.log(subgroups)
-
-    const fileList = JSON.parse(sessionStorage.getItem("fileList"))
-    console.log("passing files:", fileList)
-    console.log("passing files first file path:", fileList[0])
-
-    //need to change back slashes to forward slashes and add file:///
-    const correctFilepaths = []
-    for(var i = 0; i < fileList.length; i++) {
-        const newpath = fileList[i].replaceAll("\\", "/")
-        const finalpath = "file:///" + newpath
-        correctFilepaths.push(finalpath)
-    }
-
-    console.log(correctFilepaths)
-    
+    console.log(subgroups)    
     
     return (
         <section className='section'>
@@ -1053,6 +1069,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                         width: "825px",
                         height: "550px",
                         // background: "url('file:///C:/Users/ellyc/OneDrive/Desktop/DATA451/electron-demos/my-app-demo/public/photos/M12_2_Apr19_3.jpg')",
+                        // background: "url('file:///C:/Users/edwar/Desktop/Cal\\ Poly/Ecology\\ Project/forge-test-2/src/photos_src/M12_2_Apr19_3.jpg')",
                         background: "url(" + correctFilepaths[0] + ")", //this is how you change the image!!
                         backgroundSize: "825px 550px"
                     }}
@@ -1155,15 +1172,22 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
 
 
                 <br />
+                <button onClick={() => nextImage()}
+                    className="next-image-button"
+                >
+                    Next Image
+                </button>
+                <br />
                 <button onClick={() => dummySaveFile()}
                     className="save-file-button"
                 >
                     Save Project
                 </button>
                 <button variant='contained'
-                onClick={(e) => exportToExcel(fileName, editJson)} color='primary'
-                style={{ cursor: "pointer", fontSize: 14 }}
-                >Download Data to Excel
+                    onClick={(e) => exportToExcel(fileName, editJson)} color='primary'
+                    style={{ cursor: "pointer", fontSize: 14 }}
+                >
+                    Download Data to Excel
                 </button>
 
                 {/* <button onClick={() => dummySendData()}
