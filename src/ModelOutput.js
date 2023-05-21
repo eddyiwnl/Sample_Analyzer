@@ -8,12 +8,14 @@ import data from './test_output.json'; // for downloading test data to excel
 import XLSX from 'sheetjs-style';
 import * as FileSaver from 'file-saver';
 
+
 // const PureCanvas = React.forwardRef((props, ref) => <canvas ref={ref} />)
 
 /* TODO
 One of two functionalities: 
 */
 const ModelOutput = ({projectData, setProjectData, fileName}) => {
+    // sessionStorage.clear();
 
     //---------------------------------------------Initializing variables------------------------------------------
     const [outputGroup, setOutputGroup] = useState("") // test output
@@ -26,6 +28,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     const [currMajorGroup, setCurrMajorGroup] = useState("") // current selected major group
     const [numElements, setNumElements] = useState(0) // number of bounding boxes
     const [currFilepath, setCurrFilepath] = useState("")
+    const [fileChange, setFileChange] = useState(false)
     // const [hover, setHover] = useState(false)
 
     const [inDelete, setInDelete] = useState(false); // whether or not the user just deleted a box
@@ -81,6 +84,10 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     var currImageId = sessionStorage.getItem("curr_image_id");
     if(!currImageId) {
         currImageId = 0;
+        sessionStorage.setItem("curr_image_id", currImageId);
+    }
+    else {
+        currImageId = parseInt(currImageId)
     }
     const fileList = JSON.parse(sessionStorage.getItem("fileList"))
     console.log("passing files:", fileList)
@@ -97,10 +104,15 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
 
     console.log(correctFilepaths)
     console.log(correctFilepaths[0])
-    
-    const splitPath = correctFilepaths[currImageId].split("/")
-    const currImage = splitPath[splitPath.length - 1]
+    const genFilePath = (filePaths) => {
+        const splitPath = correctFilepaths[currImageId].split("/")
+        const imagePath = splitPath[splitPath.length - 1]
+        return imagePath
+    }
+    const currImage = genFilePath(correctFilepaths)
     console.log("Current image: ", currImage)
+
+
 
     // var currImage = "M12_2_Apr19_3.jpg";
 
@@ -870,7 +882,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
 
         writeText(text_ctx, { text: 'Hi!', x: 200, y: 0 });
 
-    }, []);
+    }, [fileChange]);
 
     /*
         Draws anchor points
@@ -1046,7 +1058,24 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     };
 
     const nextImage = () => {
-        console.log("Should go to next image")
+        if(correctFilepaths.length-1 == currImageId) {
+            console.log("No next image")
+            window.electronAPI.ipcR.nextImagePopup()
+        }
+        else {
+            console.log("Should go to next image")
+            currImageId = parseInt(sessionStorage.getItem("curr_image_id"));
+            currImageId += 1
+            sessionStorage.setItem("curr_image_id", currImageId);
+            console.log("CURR IMAGEID: ", currImageId)
+            if(fileChange == false) {
+                setFileChange(true);
+            }
+            else {
+                setFileChange(false);
+            }
+        }
+        console.log(correctFilepaths)
     }
 
     //console.log(updated) //now I can access the subgroup classification
@@ -1070,7 +1099,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                         height: "550px",
                         // background: "url('file:///C:/Users/ellyc/OneDrive/Desktop/DATA451/electron-demos/my-app-demo/public/photos/M12_2_Apr19_3.jpg')",
                         // background: "url('file:///C:/Users/edwar/Desktop/Cal\\ Poly/Ecology\\ Project/forge-test-2/src/photos_src/M12_2_Apr19_3.jpg')",
-                        background: "url(" + correctFilepaths[0] + ")", //this is how you change the image!!
+                        backgroundImage: "url(" + correctFilepaths[currImageId] + ")", //this is how you change the image!!
                         backgroundSize: "825px 550px"
                     }}
                     // align="center"

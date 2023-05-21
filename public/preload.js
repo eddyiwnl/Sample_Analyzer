@@ -19,6 +19,7 @@ process.once("loaded", () => {
       sendProjectData: (projData) => ipcRenderer.send('send-data', projData),
       asyncMessage: () => ipcRenderer.send('async-message'),
       callPythonFile: () => ipcRenderer.invoke('call-python-file'),
+      nextImagePopup: () => ipcRenderer.send('next-image-popup'),
       once(channel, func) {
         const validChannels = ['ipc-example'];
         if (validChannels.includes(channel)) {
