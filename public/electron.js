@@ -128,7 +128,18 @@ function showImagePopup() {
     buttons: ['Close'],
     defaultId: 2,
     title: 'Warning',
-    message: 'No more images',
+    message: 'No next image',
+  };
+  const response = dialog.showMessageBox(null, options);
+}
+
+function showImagePopup2() {
+  const options = {
+    type: 'info',
+    buttons: ['Close'],
+    defaultId: 2,
+    title: 'Warning',
+    message: 'No previous image',
   };
   const response = dialog.showMessageBox(null, options);
 }
@@ -143,6 +154,7 @@ app.whenReady().then(() => {
   ipcMain.on('send-data', handleDataSend);
   ipcMain.handle('call-python-file', handleCallScript)
   ipcMain.on('next-image-popup', showImagePopup)
+  ipcMain.on('prev-image-popup', showImagePopup2)
   
   ipcMain.on('ipc-example', async (event, arg) => {
     const msgTemplate = (pingPong) => `IPC test: ${pingPong}`;

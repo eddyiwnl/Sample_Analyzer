@@ -102,8 +102,8 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         correctFilepaths.push(finalpath)
     }
 
-    console.log(correctFilepaths)
-    console.log(correctFilepaths[0])
+    // console.log(correctFilepaths)
+    // console.log(correctFilepaths[0])
     const genFilePath = (filePaths) => {
         const splitPath = correctFilepaths[currImageId].split("/")
         const imagePath = splitPath[splitPath.length - 1]
@@ -223,7 +223,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         const y1 = bbox[1]
         const x2 = bbox[2]
         const y2 = bbox[3]
-        console.log(bbox)
+        // console.log(bbox)
         ctx.strokeStyle = major_group_color.get(labels);
         ctx.fillStyle = major_group_color.get(labels);
         ctx.globalAlpha = 0.4;
@@ -612,11 +612,11 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         // }
 
         // Using predictions
-        for (var i = 0; i < testJson[currImage].predictions.pred_boxes.length; i++)
+        for (var i = 0; i < editJson[currImage].predictions.pred_boxes.length; i++)
         {
-            console.log(i)
-            var pred_labels = testJson[currImage].predictions.pred_labels
-            var pred_bbox = testJson[currImage].predictions.pred_boxes
+            // console.log(i)
+            var pred_labels = editJson[currImage].predictions.pred_labels
+            var pred_bbox = editJson[currImage].predictions.pred_boxes
             drawBBox(ctx, pred_bbox[i], pred_labels[i])
             updateBBox(ctx, pred_bbox[i], pred_labels[i])
         }
@@ -1078,6 +1078,27 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         console.log(correctFilepaths)
     }
 
+    const prevImage = () => {
+        if(currImageId == 0) {
+            console.log("No prev image")
+            window.electronAPI.ipcR.prevImagePopup()
+        }
+        else {
+            console.log("Should go to prev image")
+            currImageId = parseInt(sessionStorage.getItem("curr_image_id"));
+            currImageId -= 1
+            sessionStorage.setItem("curr_image_id", currImageId);
+            console.log("CURR IMAGEID: ", currImageId)
+            if(fileChange == false) {
+                setFileChange(true);
+            }
+            else {
+                setFileChange(false);
+            }
+        }
+        console.log(correctFilepaths)
+    }
+
     //console.log(updated) //now I can access the subgroup classification
 
     subgroups.push(updated); //could so something like this to add to excel output
@@ -1201,6 +1222,11 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
 
 
                 <br />
+                <button onClick={() => prevImage()}
+                    className="prev-image-button"
+                >
+                    Prev Image
+                </button>
                 <button onClick={() => nextImage()}
                     className="next-image-button"
                 >
