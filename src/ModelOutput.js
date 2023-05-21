@@ -90,7 +90,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         currImageId = parseInt(currImageId)
     }
     const fileList = JSON.parse(sessionStorage.getItem("fileList"))
-    console.log("passing files:", fileList)
+    // console.log("passing files:", fileList)
     console.log("passing files first file path:", fileList[currImageId])
 
     //need to change back slashes to forward slashes and add file:///
@@ -125,7 +125,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         console.log("Empty storage, loading JSON")
         editJson = JSON.parse(JSON.stringify(testJson))
     }
-    console.log("---------------------------------------------------------")
+    console.log("------------------------------------------------------")
     console.log(editJson)
 
     // setProjectData(testJson)
@@ -246,6 +246,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         const x2 = bbox[2]
         const y2 = bbox[3]        
         bbox_list.push({x: x1/6.545, y: y1/6.545, w: (x2-x1)/6.545, h: (y2-y1)/6.545, color: major_group_color.get(labels), majorgroup: labels})
+        // console.log("BBOX LIST: ", bbox_list)
         setBboxs(bbox_list)
         // ctx.clearRect((x1/6.545)-3, (y1/6.545)-3, ((x2-x1)/6.545)+4, ((y2-y1)/6.545)+4) 
         // -3 because lineWidth is creating a border outside the rect pixels
@@ -617,6 +618,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
             // console.log(i)
             var pred_labels = editJson[currImage].predictions.pred_labels
             var pred_bbox = editJson[currImage].predictions.pred_boxes
+            console.log("PRED BOXES: ", pred_bbox)
             drawBBox(ctx, pred_bbox[i], pred_labels[i])
             updateBBox(ctx, pred_bbox[i], pred_labels[i])
         }
@@ -925,7 +927,8 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         }
         else {
             console.log("SAVED ELEMENT STUFF: ", bboxs[id].x, bboxs[id].y, bboxs[id].w, bboxs[id].h);
-            var updated_box = [bboxs[id].x*6.545, bboxs[id].y*6.545, (bboxs[id].w*6.545)+bboxs[id].x, (bboxs[id].h*6.545)+bboxs[id].y]
+            var updated_box = [bboxs[id].x*6.545, bboxs[id].y*6.545, (bboxs[id].w*6.545)+(6.545*bboxs[id].x), (bboxs[id].h*6.545)+(6.545*bboxs[id].y)]
+            console.log("UPDATED BOX: ", updated_box)
             editJson[currImage].predictions.pred_boxes[id] = updated_box
             editJson[currImage].predictions.pred_labels[id] = bboxs[id].majorgroup
         }
