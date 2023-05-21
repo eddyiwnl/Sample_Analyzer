@@ -134,7 +134,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     
     //creating json data from model
 
-    const subgroups = [];
+    // const subgroups = [];
 
     const exportToExcel = async (fileName, editJson) => {
 
@@ -177,7 +177,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                 finalDict['Major Group'] = Object.keys(newdict[Object.keys(newdict)[i]])[j]
                 finalDict['Individual Count'] = Object.values(newdict[Object.keys(newdict)[i]])[j]
                 finalDict['Manually Reviewed'] = 0
-                finalDict['Additional Label'] = subgroups[0] //will have to change this once we have multiple images
+                // finalDict['Additional Label'] = subgroups[0] //will have to change this once we have multiple images
                 finalData.push(finalDict)
             }
         }
@@ -1048,17 +1048,17 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     };
 
     
-    const [message, setMessage] = useState('');
-    const [updated, setUpdated] = useState(message);
+    // const [message, setMessage] = useState('');
+    // const [updated, setUpdated] = useState(message);
 
 
-    const handleChange2 = (event) => {
-        setMessage(event.target.value);
-    };
+    // const handleChange2 = (event) => {
+    //     setMessage(event.target.value);
+    // };
 
-    const handleClick2 = () => {
-        setUpdated(message);
-    };
+    // const handleClick2 = () => {
+    //     setUpdated(message);
+    // };
 
     const nextImage = () => {
         if(correctFilepaths.length-1 == currImageId) {
@@ -1104,9 +1104,9 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
 
     //console.log(updated) //now I can access the subgroup classification
 
-    subgroups.push(updated); //could so something like this to add to excel output
+    // subgroups.push(updated); //could so something like this to add to excel output
 
-    console.log(subgroups)    
+    // console.log(subgroups)    
     
     return (
         <section className='section'>
@@ -1204,7 +1204,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
 
                 }
 
-                {
+                {/* {
                     deleteButton &&
                     <div>
 
@@ -1221,7 +1221,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     <button onClick={handleClick2}>Update</button>
 
                     </div>
-                }
+                } */}
 
 
                 <br />
