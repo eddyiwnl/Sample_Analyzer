@@ -1,5 +1,5 @@
 {
-  "name": "forge-test-2",
+  "name": "Sample-Analyzer",
   "version": "0.1.0",
   "main": "public/electron.js",
   "homepage": "./",
