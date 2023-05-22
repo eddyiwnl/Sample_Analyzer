@@ -222,7 +222,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         console.log("canvas width: ", canvas.width)
         console.log("canvas height: ", canvas.height)
     }
-    const drawBBox = (ctx, bbox, labels) => {
+    const drawBBox = (ctx, bbox, labels, scores) => {
         const x1 = bbox[0]
         const y1 = bbox[1]
         const x2 = bbox[2]
@@ -236,6 +236,9 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         // 6.545 is our scaling from the original image dimensions (5400px x 3600px): we scale it down to (825px x 550px)
         ctx.strokeRect(x1/6.545, y1/6.545, (x2-x1)/6.545, (y2-y1)/6.545);
         ctx.fillRect(x1/6.545, y1/6.545, (x2-x1)/6.545, (y2-y1)/6.545);
+
+        writeText(ctx, { text: labels+": "+Math.round(scores*100)/100, x: x1/6.545, y: y1/6.545 });
+
         
         // bbox_list.push({x: x1/6.545, y: y1/6.545, w: (x2-x1)/6.545, h: (y2-y1)/6.545, color: major_group_color.get(labels), majorgroup: labels})
         // setBboxs(bbox_list)
@@ -244,12 +247,12 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         // +4 is because the previous line doesnt reach the last line
 
     };
-    const updateBBox = (ctx, bbox, labels) => {
+    const updateBBox = (ctx, bbox, labels, scores) => {
         const x1 = bbox[0]
         const y1 = bbox[1]
         const x2 = bbox[2]
         const y2 = bbox[3]        
-        bbox_list.push({x: x1/6.545, y: y1/6.545, w: (x2-x1)/6.545, h: (y2-y1)/6.545, color: major_group_color.get(labels), majorgroup: labels})
+        bbox_list.push({x: x1/6.545, y: y1/6.545, w: (x2-x1)/6.545, h: (y2-y1)/6.545, color: major_group_color.get(labels), majorgroup: labels, score: Math.round(scores*100)/100})
         // console.log("BBOX LIST: ", bbox_list)
         setBboxs(bbox_list)
         // ctx.clearRect((x1/6.545)-3, (y1/6.545)-3, ((x2-x1)/6.545)+4, ((y2-y1)/6.545)+4) 
@@ -259,9 +262,11 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     };
 
     const writeText = (ctx, info, style = {}) => {
+        // ctx.clearRect(0,0,1000,1000);
         const { text, x, y } = info
-        const { fontSize = 10, fontFamily = 'Arial', color = 'white', textAlign = 'left', textBaseline = 'top' } = style;
-        // ctx.globalAlpha=1.0;
+        const { fontSize = 20, fontFamily = 'Arial', color = "white", textAlign = 'left', textBaseline = 'top' } = style;
+        ctx.save();
+        ctx.globalAlpha=1.0;
         ctx.beginPath();
         ctx.font = fontSize + 'px ' + fontFamily;
         ctx.textAlign = textAlign;
@@ -270,6 +275,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         ctx.fillText(text, x, y);
         ctx.stroke();
         ctx.fill();
+        ctx.restore();
     }
     
     useEffect(() => {
@@ -294,6 +300,10 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
             // 6.545 is our scaling from the original image dimensions (5400px x 3600px): we scale it down to (825px x 550px)
             ctx.strokeRect(bboxs[i].x, bboxs[i].y, bboxs[i].w, bboxs[i].h);
             ctx.fillRect(bboxs[i].x, bboxs[i].y, bboxs[i].w, bboxs[i].h);
+
+            writeText(ctx, { text: bboxs[i].majorgroup+": "+bboxs[i].score, x: bboxs[i].x, y: bboxs[i].y });
+
+            
         }
         // for (var i = 0; i < testJson["M12_2_Apr19_3.jpg"].truth.true_boxes.length; i++)
         // {
@@ -336,6 +346,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     id = i;
                     setCurrElement(id)
                     setShow(true);
+                    setInEdit(true);
                     setCurrMajorGroup(b.majorgroup);
                     break;
                 }
@@ -344,6 +355,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     id = -1
                     setCurrMajorGroup('');
                     setShow(false);
+                    setInEdit(false);
                 }
             }
             console.log('coords: ', x, y)
@@ -363,8 +375,12 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     ctx.fillStyle = "white";
                     ctx.fillRect(bboxs[currElement].x, bboxs[currElement].y, bboxs[currElement].w, bboxs[currElement].h);
                 }
+                else if(!id) {
+                    dragging = false;
+                    console.log("None")
+                }
                 // 1. top left
-                if (checkCloseEnough(x, bboxs[id].x) && checkCloseEnough(y, bboxs[id].y)) {
+                else if (checkCloseEnough(x, bboxs[id].x) && checkCloseEnough(y, bboxs[id].y)) {
                     dragging = true;
                     dragTL = true;
                     console.log("Dragging top left")
@@ -404,7 +420,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
 
             // ctx.clearRect(bbox_list[id].x, bbox_list[id].y, bbox_list[id].w, bbox_list[id].h);
 
-            for(_i = 0; _b = bboxs[_i]; _i ++) {
+            for(_i = 0; _b = bboxs[_i]; _i++) {
                 if(hover && id === _i) {
                     setCurrElement(_i)
                     setShow(true);
@@ -414,7 +430,11 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     ctx.fillStyle = _b.color;
                 }
                 // ctx.fillStyle = (hover && id === _i) ? "red" : _b.color;
+                // ctx.clearRect(_b.x, _b.y, _b.w, _b.h);
+                ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
                 ctx.fillRect(_b.x, _b.y, _b.w, _b.h);
+                writeText(ctx, { text: _b.majorgroup+": "+_b.score, x: _b.x, y: _b.y });
+
                 // setOutputGroup(_b.majorgroup);
             }
             // renderMap2(x, y);
@@ -449,6 +469,8 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                         // ctx.fillStyle = (hover && id === _i) ? "red" : _b.color;
                         ctx.clearRect(_b.x, _b.y, _b.w, _b.h);
                         ctx.fillRect(_b.x, _b.y, _b.w, _b.h);
+                        writeText(ctx, { text: _b.majorgroup+": "+_b.score, x: _b.x, y: _b.y });
+
                         // setOutputGroup(_b.majorgroup);
                     }
                 }
@@ -472,13 +494,17 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                         // ctx.clearRect(_b.x, _b.y, _b.w, _b.h)
                         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
                         drawAnchors();
+                        // writeText(ctx, { text: _b.majorgroup, x: _b.x, y: _b.y });
 
                     }
                     else {
                         ctx.fillStyle = "white";
-                        ctx.clearRect(_b.x, _b.y, _b.w, _b.h);
+                        // ctx.clearRect(_b.x, _b.y, _b.w, _b.h);
                         ctx.fillRect(_b.x, _b.y, _b.w, _b.h);
+                        writeText(ctx, { text: _b.majorgroup, x: _b.x, y: _b.y });
+
                     }
+
                     // ctx.fillStyle = (hover && id === _i) ? "red" : _b.color;
                     // setOutputGroup(_b.majorgroup);
                 }
@@ -533,8 +559,11 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
                 }
                 else {
-                    // console.log("D")
+                    console.log("D")
                     for(_i = 0; _b = bboxs[_i]; _i ++) {
+
+                        // writeText(ctx, { text: _b.majorgroup+": "+_b.score, x: _b.x, y: _b.y });
+
                         // if(hover && currElement === _i) {
                         //     ctx.fillStyle = "white";
                         //     ctx.clearRect(_b.x, _b.y, _b.w, _b.h)
@@ -622,9 +651,10 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
             // console.log(i)
             var pred_labels = editJson[currImage].predictions.pred_labels
             var pred_bbox = editJson[currImage].predictions.pred_boxes
+            var pred_scores = editJson[currImage].predictions.pred_scores
             console.log("PRED BOXES: ", pred_bbox)
-            drawBBox(ctx, pred_bbox[i], pred_labels[i])
-            updateBBox(ctx, pred_bbox[i], pred_labels[i])
+            drawBBox(ctx, pred_bbox[i], pred_labels[i], pred_scores[i])
+            updateBBox(ctx, pred_bbox[i], pred_labels[i], pred_scores[i])
         }
         console.log(bbox_list)
 
@@ -635,51 +665,6 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
 
         function checkCloseEnough(p1, p2) {
             return Math.abs(p1 - p2) < closeEnough;
-        }
-        // current issue: clicking event temporarily overrides the color for hover functionality; RESOLVED
-        function renderMap2(x, y) {
-            // var r = canvasRef.current.getBoundingClientRect(),
-            //     x = e.clientX - r.left, y = e.clientY - r.top;
-            // 4 cases:
-            // 1. top left
-            console.log('coords: ', x, y)
-            if (checkCloseEnough(x, bboxs[currElement].x) && checkCloseEnough(y, bboxs[currElement].y)) {
-                dragTL = true;
-                console.log("Dragging top left")
-            }
-            // 2. top right
-            else if (checkCloseEnough(x, bboxs[currElement].x + bboxs[currElement].w) && checkCloseEnough(y, bboxs[currElement].y)) {
-                dragTR = true;
-                console.log("Dragging top right")
-            }
-            // 3. bottom left
-            else if (checkCloseEnough(x, bboxs[currElement].x) && checkCloseEnough(y, bboxs[currElement].y + bboxs[currElement].h)) {
-                dragBL = true;
-                console.log("Dragging bottom left")
-            }
-            // 4. bottom right
-            else if (checkCloseEnough(x, bboxs[currElement].x + bboxs[currElement].w) && checkCloseEnough(y, bboxs[currElement].y + bboxs[currElement].h)) {
-                dragBR = true;
-                console.log("Dragging bottomright")
-            }
-            // (5.) none of them
-            else {
-                console.log("None")
-                // handle not resizing
-            }
-            for(_i = 0; _b = bbox_list[_i]; _i ++) {
-                if(hover && id === _i) {
-                    setCurrElement(_i)
-                    setShow(true);
-                    ctx.fillStyle = "white";
-                }
-                else {
-                    ctx.fillStyle = _b.color;
-                }
-                // ctx.fillStyle = (hover && id === _i) ? "red" : _b.color;
-                ctx.fillRect(_b.x, _b.y, _b.w, _b.h);
-                // setOutputGroup(_b.majorgroup);
-            }
         }
         // canvasRef.current.onmousemove = function(e) {
         //     // Get the current mouse position
@@ -717,6 +702,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     hover = true;
                     id = i;
                     setShow(true);
+                    setInEdit(true);
                     setCurrMajorGroup(b.majorgroup);
                     break;
                 }
@@ -724,6 +710,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     hover = false;
                     setCurrMajorGroup('');
                     setShow(false);
+                    setInEdit(false);
                 }
             }
             console.log('coords: ', x, y)
@@ -772,6 +759,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                 }
                 // ctx.fillStyle = (hover && id === _i) ? "red" : _b.color;
                 ctx.fillRect(_b.x, _b.y, _b.w, _b.h);
+                writeText(ctx, { text: _b.majorgroup+": "+_b.score, x: _b.x, y: _b.y });
                 // setOutputGroup(_b.majorgroup);
             }
             // renderMap2(x, y);
@@ -794,6 +782,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                 // ctx.fillStyle = (hover && id === _i) ? "red" : _b.color;
                 ctx.clearRect(_b.x, _b.y, _b.w, _b.h);
                 ctx.fillRect(_b.x, _b.y, _b.w, _b.h);
+                writeText(ctx, { text: _b.majorgroup+": "+_b.score, x: _b.x, y: _b.y });
                 // setOutputGroup(_b.majorgroup);
             }
         }
@@ -886,7 +875,6 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
             // clearAnchor(bbox_list[id].x + bbox_list[id].w, bbox_list[id].y + bbox_list[id].h, closeEnough) // bottom right
         }
 
-        writeText(text_ctx, { text: 'Hi!', x: 200, y: 0 });
 
     }, [fileChange]);
 
