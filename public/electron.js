@@ -6,6 +6,10 @@ const isDev = require("electron-is-dev");
 
 const fs = require('fs');
 let { PythonShell } = require('python-shell')
+const unhandled = require('electron-unhandled');
+
+unhandled();
+
 
 
 // Global variable
@@ -46,6 +50,7 @@ function createWindow() {
   );
 
   // Open the DevTools.
+  console.log("IS DEV?", isDev)
   if (isDev) {
     win.webContents.openDevTools();
   }

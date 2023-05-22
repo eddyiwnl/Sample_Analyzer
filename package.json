@@ -15,6 +15,7 @@
     "bootstrap": "^5.2.3",
     "electron-is-dev": "^1.2.0",
     "electron-squirrel-startup": "^1.0.0",
+    "electron-unhandled": "^4.0.1",
     "file-saver": "^2.0.5",
     "framer-motion": "^9.0.2",
     "fs": "^0.0.1-security",
@@ -31,7 +32,7 @@
   },
   "scripts": {
     "dev": "concurrently -k \"cross-env BROWSER=none npm start\" \"npm:electron\"",
-    "electron": "wait-on http://127.0.0.1:3000 && electron-forge start",
+    "electron": "wait-on http://127.0.0.1:3000 && set ELECTRON_IS_DEV=0 && electron-forge start",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

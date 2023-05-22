@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+// const unhandled = require('electron-unhandled');
+
+// unhandled();
 
 const ModelTest = () => {
     const [loading, setLoading] = useState(false) // Whether or not the model is currently running

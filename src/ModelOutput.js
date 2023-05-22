@@ -8,6 +8,10 @@ import data from './test_output.json'; // for downloading test data to excel
 import XLSX from 'sheetjs-style';
 import * as FileSaver from 'file-saver';
 
+// const unhandled = require('electron-unhandled');
+
+// unhandled();
+
 
 // const PureCanvas = React.forwardRef((props, ref) => <canvas ref={ref} />)
 
