@@ -645,16 +645,39 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         //     updateBBox(ctx, true_bbox[i], true_labels[i])
         // }
 
-        // Using predictions
+        editJson[currImage].predictions.area = []
+
         for (var i = 0; i < editJson[currImage].predictions.pred_boxes.length; i++)
+        {
+            // numbers go x1, y1, x2, y2 (area = (x2 - x1) * (y2 - y1 ))
+            var current_box = editJson[currImage].predictions.pred_boxes[i]
+            //add area as a key in the JSON data
+            var area = (current_box[2] - current_box[0]) * (current_box[3] - current_box[1])
+            editJson[currImage].predictions.area[i] = area
+            
+        }
+        
+        var area_items = Object.keys(editJson[currImage].predictions.area).map(
+            (key) => { return [key, editJson[currImage].predictions.area[key]] });
+
+        
+        area_items.sort((first, second) => { return first[1] - second[1] });
+
+        var sorted_json = area_items.map(
+            (e) => { return e[0] }).reverse();
+
+        console.log("SORTED: ", sorted_json)
+
+        // Using predictions
+        for (var sorter_index = 0; sorter_index < sorted_json.length; sorter_index++)
         {
             // console.log(i)
             var pred_labels = editJson[currImage].predictions.pred_labels
             var pred_bbox = editJson[currImage].predictions.pred_boxes
             var pred_scores = editJson[currImage].predictions.pred_scores
             console.log("PRED BOXES: ", pred_bbox)
-            drawBBox(ctx, pred_bbox[i], pred_labels[i], pred_scores[i])
-            updateBBox(ctx, pred_bbox[i], pred_labels[i], pred_scores[i])
+            drawBBox(ctx, pred_bbox[sorted_json[sorter_index]], pred_labels[sorted_json[sorter_index]], pred_scores[sorted_json[sorter_index]])
+            updateBBox(ctx, pred_bbox[sorted_json[sorter_index]], pred_labels[sorted_json[sorter_index]], pred_scores[sorted_json[sorter_index]])
         }
         console.log(bbox_list)
 
