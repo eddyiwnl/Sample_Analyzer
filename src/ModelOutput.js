@@ -80,9 +80,11 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     major_group_color.set("Insecta", "#A9A0FF")
     major_group_color.set("Ostracoda", "#2DFF29")
     major_group_color.set("Polychaeta", "#2FCAF4")
-    major_group_color.set("Other Annelida", "#FFFFFF")
-    major_group_color.set("Other Crustacea", "#FFBBBB")
     major_group_color.set("Other", "#8C8B8B")
+
+    // major_group_color.set("Other Annelida", "#FFFFFF")
+    // major_group_color.set("Other Crustacea", "#FFBBBB")
+    
 
     //---------------------------------------------Initializing JSON / images------------------------------------------
     var currImageId = sessionStorage.getItem("curr_image_id");
@@ -1160,7 +1162,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     }} /> */}
             </div>
             <div id="temp_legend">
-                <img src={require('./photos_src/Capture.PNG')}></img>
+                <img src={require('./photos_src/legend.png')} width = "150" height = "215"></img>
             </div>
             <div id="rest">
                 {/* <h2>?: {outputGroup}</h2> */}
