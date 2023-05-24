@@ -1165,9 +1165,10 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     }} /> */}
             </div>
             <div id="temp_legend">
-                <img src={require('./photos_src/updated_label.png')} width = "150" height = "230"></img>
+                <img src={require('./photos_src/updated_label.png')} width = "150" height = "250"></img>
             </div>
             <div id="rest">
+                <h4>Current Image: {currImage} </h4>
                 {/* <h2>?: {outputGroup}</h2> */}
                 <h2>Major Group: {currMajorGroup}</h2>
                 {/* <h2>Test: {bboxs.length}</h2> */}
