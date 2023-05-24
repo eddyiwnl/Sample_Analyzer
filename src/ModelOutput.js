@@ -74,16 +74,19 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     */
     const major_group_color = new Map();
     major_group_color.set("Amphipoda", "#E52D00")
-    major_group_color.set("Bivalvia", "#E5D400")
-    major_group_color.set("Cumacea", "#75A433")
+    major_group_color.set("Bivalvia", "#FFED0E")
+    major_group_color.set("Cumacea", "#FFBB00") 
     major_group_color.set("Gastropoda", "#FC30F6")
     major_group_color.set("Insecta", "#A9A0FF")
     major_group_color.set("Ostracoda", "#2DFF29")
     major_group_color.set("Polychaeta", "#2FCAF4")
-    major_group_color.set("Other", "#8C8B8B")
+    major_group_color.set("Other", "#1803FC")
+    major_group_color.set("Other Annelida", "#38B2A7")
+    major_group_color.set("Other Crustacea", "#FFBBBB")
+    major_group_color.set("Unknown", "#7803FC")
+    major_group_color.set("Custom Label", "#8C8B8B")
 
-    // major_group_color.set("Other Annelida", "#FFFFFF")
-    // major_group_color.set("Other Crustacea", "#FFBBBB")
+
     
 
     //---------------------------------------------Initializing JSON / images------------------------------------------
@@ -999,7 +1002,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         var to_add_w = 30
         var to_add_h = 30
         var to_add_color = "#8C8B8B" // this is the 'other' color
-        var to_add_majorgroup = "None"
+        var to_add_majorgroup = "Other"
         bboxs.push({x: to_add_x, y: to_add_y, w: to_add_w, h: to_add_h, color: to_add_color, majorgroup: to_add_majorgroup})
         var updated_box = [to_add_x*6.545, to_add_y*6.545, (to_add_w*6.545)+to_add_x, (to_add_h*6.545)+to_add_y]
         editJson[currImage].predictions.pred_boxes.push(updated_box)
@@ -1162,7 +1165,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     }} /> */}
             </div>
             <div id="temp_legend">
-                <img src={require('./photos_src/legend.png')} width = "150" height = "215"></img>
+                <img src={require('./photos_src/updated_label.png')} width = "150" height = "230"></img>
             </div>
             <div id="rest">
                 {/* <h2>?: {outputGroup}</h2> */}
@@ -1216,7 +1219,11 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                         <Dropdown.Item eventKey="Insecta">Insecta</Dropdown.Item>
                         <Dropdown.Item eventKey="Ostracoda">Ostracoda</Dropdown.Item>
                         <Dropdown.Item eventKey="Polychaeta">Polychaeta</Dropdown.Item>
-                        <Dropdown.Item eventKey="">Other</Dropdown.Item>
+                        <Dropdown.Item eventKey="Other">Other</Dropdown.Item>
+                        <Dropdown.Item eventKey="Other Annelida">Other Annelida</Dropdown.Item>
+                        <Dropdown.Item eventKey="Other Crustacea">Other Crustacea</Dropdown.Item>
+                        <Dropdown.Item eventKey="Unknown">Unknown</Dropdown.Item>
+                        <Dropdown.Item eventKey="Custom Label">Custom Label</Dropdown.Item>
                     </DropdownButton>
 
                 }
