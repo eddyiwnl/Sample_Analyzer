@@ -102,7 +102,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     // console.log("passing files:", fileList)
     console.log("passing files first file path:", fileList[currImageId])
 
-    //need to change back slashes to forward slashes and add file:///
+    //need to change back slashes to forward slashes, insert double backslash in front of spaces, and add file:///
     const correctFilepaths = []
     for(var i = 0; i < fileList.length; i++) {
         const newpath = fileList[i].replaceAll("\\", "/")

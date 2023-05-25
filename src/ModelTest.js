@@ -10,13 +10,17 @@ const ModelTest = () => {
 
     const runSimpleScript = () => {
         console.log("Hello from ModelTest.js")
+        // Do arg logic here
+        const pythonArgs = ['./model_core/Model/model_checkpoint_map583.ckpt', './model_core/testImages/test_img_1.jpg']
+        window.electronAPI.ipcR.sendPythonArgs(pythonArgs);
         setLoading(true);
-        const ret = window.electronAPI.ipcR.callPythonFile()
+        window.electronAPI.ipcR.callPythonFile()
         console.log("Finished running")
-        console.log("ret: ", ret)
         
-        setLoading(false);
     }
+    window.electronAPI.ipcR.handleScriptFinish((event, value) => {
+        setLoading(false);
+    })
   
     return (
       <section className='section'>

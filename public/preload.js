@@ -18,9 +18,12 @@ process.once("loaded", () => {
       saveFile: () => ipcRenderer.invoke('dialog:saveFile'),
       sendProjectData: (projData) => ipcRenderer.send('send-data', projData),
       asyncMessage: () => ipcRenderer.send('async-message'),
-      callPythonFile: () => ipcRenderer.invoke('call-python-file'),
+      callPythonFile: () => ipcRenderer.send('call-python-file'),
       nextImagePopup: () => ipcRenderer.send('next-image-popup'),
       prevImagePopup: () => ipcRenderer.send('prev-image-popup'),
+      handleScriptFinish: (callback) => ipcRenderer.on('finish-script', callback),
+      sendPythonArgs: (pythonArgs) => ipcRenderer.send('send-args', pythonArgs),
+
       once(channel, func) {
         const validChannels = ['ipc-example'];
         if (validChannels.includes(channel)) {

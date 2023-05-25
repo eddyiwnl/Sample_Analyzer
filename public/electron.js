@@ -14,6 +14,8 @@ unhandled();
 
 // Global variable
 var currData;
+var modelArgs;
+var win;
 
 // // Conditionally include the dev tools installer to load React Dev Tools
 // let installExtension, REACT_DEVELOPER_TOOLS; // NEW!
@@ -31,7 +33,7 @@ if (require("electron-squirrel-startup")) {
 
 function createWindow() {
   // Create the browser window.
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -54,6 +56,8 @@ function createWindow() {
   if (isDev) {
     win.webContents.openDevTools();
   }
+
+  return win;
 }
 
 /*
@@ -94,6 +98,7 @@ const ExcelExportData =
     }]
 function handleFileSave(e, win) {
   // console.log(projData)
+  // console.log("HANDLE FILE SAVE WINDOW: ", win)
   const dialogResult = dialog.showSaveDialog(win, {
     properties: ['openFile']
   })
@@ -113,15 +118,31 @@ async function handleAsyncMessage(event, arg) {
   console.log("Hi", arg)
 }
 
-async function handleCallScript() {
-  const ret = await callScript()
+async function handleCallScript(win) {
+  const ret = await callScript(win)
   return ret
 }
+
+function handleArgs(e, python_args) {
+  modelArgs = python_args
+  console.log(modelArgs)
+}
+
 function callScript() {
   console.log("Running Python Script")
-  PythonShell.run('src/pytest.py', null).then(messages=>{
+  // PythonShell.run('./src/pytest.py', null).then(messages=>{
+  //   console.log(messages)
+  //   console.log('finished');
+  // });
+  const options = {
+    mode:'text',
+    args: modelArgs
+  };
+  PythonShell.run('./model_core/modelExecutable.py', options).then(messages=>{
     console.log(messages)
-    console.log('finished');
+    console.log("Finished python script")
+    // console.log("WIN: ", win)
+    win.webContents.send('finish-script', 1);
   });
   return 0;
 }
@@ -157,9 +178,10 @@ app.whenReady().then(() => {
   ipcMain.handle('async-message', handleAsyncMessage);
   ipcMain.handle('dialog:saveFile', handleFileSave);
   ipcMain.on('send-data', handleDataSend);
-  ipcMain.handle('call-python-file', handleCallScript)
-  ipcMain.on('next-image-popup', showImagePopup)
-  ipcMain.on('prev-image-popup', showImagePopup2)
+  ipcMain.on('call-python-file', callScript);
+  ipcMain.on('next-image-popup', showImagePopup);
+  ipcMain.on('prev-image-popup', showImagePopup2);
+  ipcMain.on('send-args', handleArgs);
   
   ipcMain.on('ipc-example', async (event, arg) => {
     const msgTemplate = (pingPong) => `IPC test: ${pingPong}`;
