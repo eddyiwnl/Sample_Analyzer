@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 //TODO: FIX MODEL FILES
 // ADD ABILITY TO CHOOSE SPECIFIC MODEL OUTPUT
 // ADD ABILITY TO UPLOAD EXISTING PROJECT
-// DO ALL THE FIXES THE RECOMMENDED
 
 const UploadFiles = () => {
   const [file, setFile] = useState();
@@ -114,11 +113,11 @@ const UploadFiles = () => {
     for(var i = 0; i < correctFilepaths.length; i++) {
       pythonArgs.push(correctFilepaths[i]);
     }
+    pythonArgs.push('-o ./../src/model_outputs/model_output.json')
     console.log("Python args: ", pythonArgs)
     window.electronAPI.ipcR.sendPythonArgs(pythonArgs);
     setLoading(true);
     window.electronAPI.ipcR.callPythonFile()
-    console.log("Finished running")
     
 }
 window.electronAPI.ipcR.handleScriptFinish((event, value) => {

@@ -30,6 +30,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     const [bboxs, setBboxs] = useState([]) // bbox_list
     const [currCtx, setCurrCtx] = useState() // current context (usually the canvasRef.current)
     const [currMajorGroup, setCurrMajorGroup] = useState("") // current selected major group
+    const [confidence, setConfidence] = useState(0) // current selected confidence
     const [numElements, setNumElements] = useState(0) // number of bounding boxes
     const [currFilepath, setCurrFilepath] = useState("")
     const [fileChange, setFileChange] = useState(false)
@@ -90,6 +91,31 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     
 
     //---------------------------------------------Initializing JSON / images------------------------------------------
+
+    // ORDER IS IMPORTANT: LOAD JSON THEN IF JSON IS NOT AVAILABLE, WE KNOW ITS A NEW PROJECT AND THEN LOAD FILELIST
+    var testJson = require('./model_outputs/model_output.json');
+    var fileList;
+
+    var editJson;
+    editJson = JSON.parse(sessionStorage.getItem("curr_json"));
+    if(!editJson) {
+        console.log("Empty storage, loading JSON")
+        editJson = JSON.parse(JSON.stringify(testJson))
+        fileList = JSON.parse(sessionStorage.getItem("fileList"))
+    }
+    else {
+        fileList = []
+        for (var key in editJson) {
+            if (editJson.hasOwnProperty(key)) {
+                fileList.push(key)
+                // console.log(key + " -> " + testing[key]);
+            }
+        }
+    }
+    console.log("------------------------------------------------------")
+    console.log(editJson)
+
+
     var currImageId = sessionStorage.getItem("curr_image_id");
     if(!currImageId) {
         currImageId = 0;
@@ -98,8 +124,8 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     else {
         currImageId = parseInt(currImageId)
     }
-    const fileList = JSON.parse(sessionStorage.getItem("fileList"))
-    // console.log("passing files:", fileList)
+    // const fileList = JSON.parse(sessionStorage.getItem("fileList"))
+    console.log("passing files:", fileList)
     console.log("passing files first file path:", fileList[currImageId])
 
     //need to change back slashes to forward slashes, insert double backslash in front of spaces, and add file:///
@@ -114,9 +140,8 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     // console.log(correctFilepaths)
     // console.log(correctFilepaths[0])
     const genFilePath = (filePaths) => {
-        const splitPath = correctFilepaths[currImageId].split("/")
-        const imagePath = splitPath[splitPath.length - 1]
-        return imagePath
+        const fixedPath = correctFilepaths[currImageId].slice(8).replaceAll("\\ ", " ")
+        return fixedPath
     }
     const currImage = genFilePath(correctFilepaths)
     console.log("Current image: ", currImage)
@@ -124,18 +149,6 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
 
 
     // var currImage = "M12_2_Apr19_3.jpg";
-
-
-    var testJson = require('./model_outputs/test_output.json')
-
-    var editJson;
-    editJson = JSON.parse(sessionStorage.getItem("curr_json"));
-    if(!editJson) {
-        console.log("Empty storage, loading JSON")
-        editJson = JSON.parse(JSON.stringify(testJson))
-    }
-    console.log("------------------------------------------------------")
-    console.log(editJson)
 
     // setProjectData(testJson)
 
@@ -235,7 +248,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         // console.log(bbox)
         ctx.strokeStyle = major_group_color.get(labels);
         ctx.fillStyle = major_group_color.get(labels);
-        ctx.globalAlpha = 0.4;
+        ctx.globalAlpha = 0.25;
         ctx.lineWidth = 2;
         // strokeRect(x, y, width, height)
         // 6.545 is our scaling from the original image dimensions (5400px x 3600px): we scale it down to (825px x 550px)
@@ -299,7 +312,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                 ctx.strokeStyle = bboxs[i].color;
                 ctx.fillStyle = bboxs[i].color;
             }
-            ctx.globalAlpha = 0.4;
+            ctx.globalAlpha = 0.25;
             ctx.lineWidth = 2;
             // strokeRect(x, y, width, height)
             // 6.545 is our scaling from the original image dimensions (5400px x 3600px): we scale it down to (825px x 550px)
@@ -353,12 +366,14 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     setShow(true);
                     setInEdit(true);
                     setCurrMajorGroup(b.majorgroup);
+                    setConfidence(b.score);
                     break;
                 }
                 else{
                     hover = false;
                     id = -1
                     setCurrMajorGroup('');
+                    setConfidence(0);
                     setShow(false);
                     setInEdit(false);
                 }
@@ -498,6 +513,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     if(currElement != _i) {
                         // ctx.clearRect(_b.x, _b.y, _b.w, _b.h)
                         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+                        // console.log("DRAWING")
                         drawAnchors();
                         // writeText(ctx, { text: _b.majorgroup, x: _b.x, y: _b.y });
 
@@ -506,6 +522,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                         ctx.fillStyle = "white";
                         // ctx.clearRect(_b.x, _b.y, _b.w, _b.h);
                         ctx.fillRect(_b.x, _b.y, _b.w, _b.h);
+                        // console.log("WRITING")
                         writeText(ctx, { text: _b.majorgroup, x: _b.x, y: _b.y });
 
                     }
@@ -594,7 +611,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
             } else {
                 ctx.fillStyle = bboxs[currElement].color
             }
-            ctx.globalAlpha = 0.4;
+            ctx.globalAlpha = 0.25;
             ctx.clearRect(bboxs[currElement].x, bboxs[currElement].y, bboxs[currElement].w, bboxs[currElement].h)
             ctx.fillRect(bboxs[currElement].x, bboxs[currElement].y, bboxs[currElement].w, bboxs[currElement].h)
             // drawAnchors();
@@ -649,7 +666,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         //     drawBBox(ctx, true_bbox[i], true_labels[i])
         //     updateBBox(ctx, true_bbox[i], true_labels[i])
         // }
-
+        // console.log(editJson["C:/Users/edwar/Desktop/Cal Poly/Ecology Project/forge-test-2/src/photos_src/M12_2_Oct19_2.jpg"])
         editJson[currImage].predictions.area = []
 
         for (var i = 0; i < editJson[currImage].predictions.pred_boxes.length; i++)
@@ -732,11 +749,13 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                     setShow(true);
                     setInEdit(true);
                     setCurrMajorGroup(b.majorgroup);
+                    setConfidence(b.score);
                     break;
                 }
                 else{
                     hover = false;
                     setCurrMajorGroup('');
+                    setConfidence(0);
                     setShow(false);
                     setInEdit(false);
                 }
@@ -873,7 +892,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
             } else {
                 ctx.fillStyle = bbox_list[id].color
             }
-            ctx.globalAlpha = 0.4;
+            ctx.globalAlpha = 0.25;
             ctx.fillRect(bbox_list[id].x, bbox_list[id].y, bbox_list[id].w, bbox_list[id].h)
             // drawAnchors();
         }
@@ -1003,7 +1022,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         var to_add_h = 30
         var to_add_color = "#8C8B8B" // this is the 'other' color
         var to_add_majorgroup = "Other"
-        bboxs.push({x: to_add_x, y: to_add_y, w: to_add_w, h: to_add_h, color: to_add_color, majorgroup: to_add_majorgroup})
+        bboxs.push({x: to_add_x, y: to_add_y, w: to_add_w, h: to_add_h, color: to_add_color, majorgroup: to_add_majorgroup, score: 1})
         var updated_box = [to_add_x*6.545, to_add_y*6.545, (to_add_w*6.545)+to_add_x, (to_add_h*6.545)+to_add_y]
         editJson[currImage].predictions.pred_boxes.push(updated_box)
         editJson[currImage].predictions.pred_labels.push(to_add_majorgroup)
@@ -1013,7 +1032,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         // Draw the new box
         ctx.strokeStyle = to_add_color;
         ctx.fillStyle = to_add_color;
-        ctx.globalAlpha = 0.4;
+        ctx.globalAlpha = 0.25;
         ctx.lineWidth = 2;
         // strokeRect(x, y, width, height)
         // 6.545 is our scaling from the original image dimensions (5400px x 3600px): we scale it down to (825px x 550px)
@@ -1061,10 +1080,12 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     */
     const handleChange = (event) => {
         setCurrMajorGroup(event);
-        console.log(bboxs)
+        setConfidence(1);
+        console.log(bboxs);
         bboxs[currElement].majorgroup = event;
-        bboxs[currElement].color = major_group_color.get(event)
-        console.log(bboxs)
+        bboxs[currElement].color = major_group_color.get(event);
+        bboxs[currElement].score = 1;
+        console.log(bboxs);
     };
 
     
@@ -1171,6 +1192,7 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
                 <h4>Current Image: {currImage} </h4>
                 {/* <h2>?: {outputGroup}</h2> */}
                 <h2>Major Group: {currMajorGroup}</h2>
+                <h2>Confidence: {confidence}</h2>
                 {/* <h2>Test: {bboxs.length}</h2> */}
                 {
                     show && 
