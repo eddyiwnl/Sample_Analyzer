@@ -1,14 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+ 
+// const path = require("path");
+
 
 //TODO: FIX MODEL FILES
 // ADD ABILITY TO CHOOSE SPECIFIC MODEL OUTPUT
 // ADD ABILITY TO UPLOAD EXISTING PROJECT
 
-const UploadFiles = () => {
+const UploadFiles = ({projectData, setProjectData}) => {
   const [file, setFile] = useState();
   const [loading, setLoading] = useState(false) // Whether or not the model is currently running
-
   // const inputRef = useRef();
   // const previewRef = useRef();
 
@@ -79,6 +81,9 @@ const UploadFiles = () => {
   //   inputRef.current.style.opacity = 0;
   //   inputRef.current.addEventListener('change', updateImageDisplay);
   // }, [inputRef.current])
+
+  var root_path;
+  var new_root_path;
   
   function handleChange(e) {
     console.log(e.target.files);
@@ -94,7 +99,16 @@ const UploadFiles = () => {
     console.log("test file path:", test_file_paths)
     console.log("current file names stringed:", JSON.stringify(test_file_paths));
     sessionStorage.setItem("fileList", JSON.stringify(test_file_paths));  
+
+    // const new_root_path = JSON.stringify(root_path).replaceAll('\\\\', '/')
   }
+
+  window.electronAPI.ipcR.getPath()
+  .then((appDataPath) => {
+      root_path = appDataPath
+      new_root_path = JSON.parse(JSON.stringify(root_path).replaceAll('\\\\', '/'))
+      console.log(new_root_path)
+  })
 
   const runModel = () => {
     console.log("Hello from UploadFiles.js")
@@ -109,11 +123,14 @@ const UploadFiles = () => {
     }
     console.log(correctFilepaths)
 
-    const pythonArgs = ['./model_core/Model/model_checkpoint_map583.ckpt']
+    // const pythonArgs = ['./model_core/Model/model_checkpoint_map583.ckpt']
+    // const pythonArgs = ['./resources/app/model_core/Model/model_checkpoint_map583.ckpt']
+    const pythonArgs = [new_root_path + '/../model_core/Model/model_checkpoint_map583.ckpt']
     for(var i = 0; i < correctFilepaths.length; i++) {
       pythonArgs.push(correctFilepaths[i]);
     }
-    pythonArgs.push('-o ./../src/model_outputs/model_output.json')
+    // pythonArgs.push('-o ./resources/app/src/model_outputs/model_output.json')
+    pythonArgs.push('-o' + new_root_path + '/../src/model_outputs/model_output.json')
     console.log("Python args: ", pythonArgs)
     window.electronAPI.ipcR.sendPythonArgs(pythonArgs);
     setLoading(true);
@@ -122,6 +139,15 @@ const UploadFiles = () => {
 }
 window.electronAPI.ipcR.handleScriptFinish((event, value) => {
     setLoading(false);
+    window.electronAPI.ipcR.sendModelJson((event, modelJsonFile) => {
+      sessionStorage.setItem("init-model", JSON.stringify(modelJsonFile));
+      console.log("SENT MODEL JSON FILE FROM MAIN: ", modelJsonFile)
+    })
+    // var testJson = require('' + new_root_path + '/../src/model_outputs/model_output.json');
+    // // var testJson = require('C:/Users/edwar/Desktop/Cal Poly/Ecology Project/forge-test-2/public/../src/model_outputs/model_output.json')
+    // console.log("testJson: ", testJson)
+    // setProjectData(testJson)
+    // console.log("PROJECT DATA: ", projectData)
 })
   
     return (

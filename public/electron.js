@@ -8,11 +8,17 @@ const fs = require('fs');
 let { PythonShell } = require('python-shell')
 const unhandled = require('electron-unhandled');
 
+const log = require('electron-log');
+
+log.info('Hello, log');
+log.warn('Some problem appears');
+
 unhandled();
 
 
 
 // Global variable
+global.appRoot = path.resolve(__dirname)
 var currData;
 var modelArgs;
 var win;
@@ -30,6 +36,8 @@ var win;
 if (require("electron-squirrel-startup")) {
   app.quit();
 } // NEW!
+// test = hi
+
 
 function createWindow() {
   // Create the browser window.
@@ -39,7 +47,8 @@ function createWindow() {
     webPreferences: {
       webSecurity: false,
       nodeIntegration: true,
-      preload: path.join(__dirname, "preload.js"),
+      // contextIsolation: false,
+      preload: path.join(__dirname, "preload.js")
     }
   });
 
@@ -50,7 +59,9 @@ function createWindow() {
       ? "http://localhost:3000"
       : `file://${path.join(__dirname, "../build/index.html")}`
   );
-
+  // .then(
+  //   () => {window.webContents.send('sendModelJson')}
+  // )
   // Open the DevTools.
   console.log("IS DEV?", isDev)
   if (isDev) {
@@ -137,12 +148,18 @@ function callScript() {
   const options = {
     mode:'text',
     args: modelArgs
-  };
-  PythonShell.run('./model_core/modelExecutable.py', options).then(messages=>{
+  }; 
+  // PythonShell.run('./resources/app/model_core/modelExecutable.py', options).then(messages=>{ 
+  PythonShell.run(path.join(__dirname, "../model_core/modelExecutable.py"), options).then(messages=>{
     console.log(messages)
     console.log("Finished python script")
     // console.log("WIN: ", win)
     win.webContents.send('finish-script', 1);
+
+    var modelJsonPath = path.join(__dirname, "../src/model_outputs/model_output.json")
+    var modelJsonFile = fs.readFileSync(modelJsonPath);
+    console.log("JSON OBJECT: ", JSON.parse(modelJsonFile))
+    win.webContents.send('sendModelJson', JSON.parse(modelJsonFile))
   });
   return 0;
 }
@@ -182,6 +199,7 @@ app.whenReady().then(() => {
   ipcMain.on('next-image-popup', showImagePopup);
   ipcMain.on('prev-image-popup', showImagePopup2);
   ipcMain.on('send-args', handleArgs);
+  ipcMain.handle('getPath', () => path.resolve(__dirname))
   
   ipcMain.on('ipc-example', async (event, arg) => {
     const msgTemplate = (pingPong) => `IPC test: ${pingPong}`;
@@ -190,6 +208,8 @@ app.whenReady().then(() => {
   });
 
   const win = createWindow();
+
+
 
 
   // if (isDev) {

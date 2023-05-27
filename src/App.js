@@ -43,7 +43,7 @@ function App() {
       <div className="App">
         <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="uploadfiles" element={<UploadFiles />} />
+              <Route path="uploadfiles" element={<UploadFiles projectData={projectData} setProjectData={setProjectData}/>} />
               <Route path="existingproject" element={<ExistingProject />} />
               <Route path="modeltest" element={<ModelTest />} />
               <Route exact path="/modeloutput" element={<ModelOutput projectData={projectData} setProjectData={setProjectData} filename={'Excel Output'}/>} />

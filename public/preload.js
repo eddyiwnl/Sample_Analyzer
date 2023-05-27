@@ -23,6 +23,11 @@ process.once("loaded", () => {
       prevImagePopup: () => ipcRenderer.send('prev-image-popup'),
       handleScriptFinish: (callback) => ipcRenderer.on('finish-script', callback),
       sendPythonArgs: (pythonArgs) => ipcRenderer.send('send-args', pythonArgs),
+      receiveRoot: (dir_name) => ipcRenderer.on('send-root', dir_name),
+      getPath: () => ipcRenderer.invoke('getPath'),
+      sendModelJson: (modelJson) => {
+        ipcRenderer.on('sendModelJson', modelJson)
+      },
 
       once(channel, func) {
         const validChannels = ['ipc-example'];

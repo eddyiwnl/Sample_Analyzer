@@ -7,6 +7,9 @@ import jsonData from './model_outputs/test_output.json'
 import data from './test_output.json'; // for downloading test data to excel
 import XLSX from 'sheetjs-style';
 import * as FileSaver from 'file-saver';
+// import log from 'electron-log/renderer';
+
+// log.info('Log from ModelOutput.js')
 
 // const unhandled = require('electron-unhandled');
 
@@ -20,6 +23,7 @@ One of two functionalities:
 */
 const ModelOutput = ({projectData, setProjectData, fileName}) => {
     // sessionStorage.clear();
+    console.log(" THHHHHHHHHHHHHHHHHHHHE PROJECT DATA IS: ", projectData)
 
     //---------------------------------------------Initializing variables------------------------------------------
     const [outputGroup, setOutputGroup] = useState("") // test output
@@ -91,9 +95,23 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
     
 
     //---------------------------------------------Initializing JSON / images------------------------------------------
+    var root_path;
+    var new_root_path;
 
+    window.electronAPI.ipcR.getPath()
+    .then((appDataPath) => {
+        root_path = appDataPath
+        new_root_path = JSON.parse(JSON.stringify(root_path).replaceAll('\\\\', '/'))
+        console.log(new_root_path)
+    })
     // ORDER IS IMPORTANT: LOAD JSON THEN IF JSON IS NOT AVAILABLE, WE KNOW ITS A NEW PROJECT AND THEN LOAD FILELIST
-    var testJson = require('./model_outputs/model_output.json');
+    // window.electronAPI.ipcR.sendModelJson((event, modelJsonFile) => {
+    //     console.log("SENT MODEL JSON FILE FROM MAIN: ", modelJsonFile)
+    // })
+    // var testJson = require('./resources/app/src/model_outputs/model_output.json');
+    var testJson = JSON.parse(sessionStorage.getItem("init-model"));
+    console.log("THE TESTJSON IS: ", testJson)
+    // var testJson = require('./model_outputs/model_output.json');
     var fileList;
 
     var editJson;
@@ -667,6 +685,13 @@ const ModelOutput = ({projectData, setProjectData, fileName}) => {
         //     updateBBox(ctx, true_bbox[i], true_labels[i])
         // }
         // console.log(editJson["C:/Users/edwar/Desktop/Cal Poly/Ecology Project/forge-test-2/src/photos_src/M12_2_Oct19_2.jpg"])
+        console.log("EDITJSON IS: ", editJson)
+        for (var key2 in editJson) {
+            if (editJson.hasOwnProperty(key2)) {
+                console.log(key2 + " -> " + editJson[key2]);
+            }
+        }
+        console.log("CURR IMAGE IS: ", currImage)
         editJson[currImage].predictions.area = []
 
         for (var i = 0; i < editJson[currImage].predictions.pred_boxes.length; i++)
