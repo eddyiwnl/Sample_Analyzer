@@ -2,6 +2,8 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## NOTE: Most recent pushes have been to the repository under the Smithsonian Organization. Those changes have not been made public.
+
 ## Available Scripts
 
 In the project directory, you can run:
